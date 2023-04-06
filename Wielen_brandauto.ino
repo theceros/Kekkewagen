@@ -2,9 +2,10 @@ int links1 = 10;
 int links2 = 11;
 int rechts1 = 12;
 int rechts2 = 13;
+int motorLeftPINPWM = 5;
+int motorRightPINPWM = 6;
 
 int hele_draai = 0;
-int percentage_draai = 0;
 
 void links(int speed) {
   
@@ -30,25 +31,27 @@ void rechts(int speed) {
   if (speed > 0) {
     digitalWrite(rechts1, HIGH);
     digitalWrite(rechts2, LOW);
-    analogWrite(motorLeftPINPWM, speed);
+    analogWrite(motorRightPINPWM, speed);
   }
   else if(speed < 0){
     digitalWrite(rechts1, LOW);
     digitalWrite(rechts2, HIGH);
-    analogWrite(motorLeftPINPWM, -speed);
+    analogWrite(motorRightPINPWM, -speed);
   }
   else {
     digitalWrite(rechts1, LOW);
     digitalWrite(rechts2, LOW);
-    analogWrite(motorLeftPINPWM, 0);
+    analogWrite(motorRightPINPWM, 0);
   }
 }
 
 void setup() {
   pinMode(links1, OUTPUT);
   pinMode(links2, OUTPUT);
+  pinMode(motorLeftPINPWM, OUTPUT);
   pinMode(rechts1, OUTPUT);
   pinMode(rechts2, OUTPUT);
+  pinMode(motorRightPINPWM, OUTPUT);
 }
 
 void loop() {
