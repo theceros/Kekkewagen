@@ -111,70 +111,57 @@ int zoek(){
 }
 
 void loop() {
-  if (flame == LOW && bereken(afs_sensor_voor) < 10){   
-    digitalWrite(fan, HIGH);
-    delay(3000);
-    digitalWrite(fan, LOW);
-    flame = HIGH;
-  }else{
+  while (flame == HIGH){
     if (graden = zoek() == -1){
-      links(-1);
-      rechts(1);
+      links(1);
+      rechts(-1);
       delay(hele_draai*0.5);
       links(0);
       rechts(0);
-      if (graden = zoek() != -1){
+      if (graden = zoek() == -1){
         links(1);
         rechts(-1);
-        delay(hele_draai*0.5);
+        delay(hele_draai*0.25);
+        links(1);
+        rechts(1);
+        delay(500);
         links(0);
         rechts(0);
-      }else{
-          if(graden < 90){
-            int draai = 90 - graden;
-            links(1);
-            rechts(-1);
-            delay(draai*25);
-          }else {
-            int draai = 180 - graden;
-            rechts(1);
-            links(-1);
-            delay(draai*25);
-      }
-      }
-    } else{
-      if(graden < 90){
-        int draai = 90 - graden;
-        links(1);
-        rechts(-1);
-        delay(draai*25);
-      }else {
-        int draai = 180 - graden;
-        rechts(1);
-        links(-1);
-        delay(draai*25);
+      } else{
+        Serial.println("return");
+        return graden;
       }
     }
   }
 
-    while (bereken(afs_sensor_voor) > 20){
-      links(1);
-      rechts(1);
-      delay(500);
-      links(0);
-      rechts(0);
+  if(graden < 90){
+    int draai = 90 - graden;
+    links(1);
+    rechts(-1);
+    delay(draai*25);
+    links(0);
+    rechts(0);
+  }else {
+    int draai = 180 - graden;
+    rechts(1);
+    links(-1);
+    delay(draai*25);
+    links(0);
+    rechts(0);
   }
-    if(bereken(afs_sensor_links) < bereken(afs_sensor_rechts)){
-      links(-1);
-      rechts(1);
-      delay(hele_draai*0.25);
-      links(0);
-      rechts(0);
-    }else{
-      links(1);
-      rechts(-1);
-      delay(hele_draai*0.25);
-      links(0);
-      rechts(0);
+
+  while (bereken(afs_sensor_voor) > 20){
+    links(1);
+    rechts(1);
   }
+  links(0);
+  rechts(0);
+
+  if (flame = LOW){
+    digitalWrite(fan, HIGH);
+  }
+  //  else{
+    //draai random
+    // een beetje
+  // }
 }
