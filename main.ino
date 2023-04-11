@@ -13,7 +13,6 @@ int afs_sensor_links = 5;
 int afs_sensor_rechts = 6;
 int afs_sensor_voor = 10;
 int fan = 8; 
-int graden = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -80,8 +79,9 @@ int draai(int snelheid, bool plus, int begin, int end){
         servo.write(i);             //hoeveel graden de servo staat.
         flame = digitalRead(3);
         if (flame == LOW){
-          flame = HIGH;
-          return begin;
+          Serial.print(end - i);
+          Serial.println(" draai 1");
+          return end - i;
         }
       } 
     } else if (plus == false){
@@ -90,8 +90,9 @@ int draai(int snelheid, bool plus, int begin, int end){
           servo.write(i);
           flame = digitalRead(3);
           if (flame == LOW){
-            flame = HIGH;
-            return begin;
+            Serial.print(begin);
+            Serial.println(" draai 2");
+            return begin - i;
           }
         }
   }
@@ -101,24 +102,35 @@ int draai(int snelheid, bool plus, int begin, int end){
 
 int zoek(){
   if (int grad = draai(15, false, 90, 0) != -1){
+    Serial.print(grad);
+    Serial.println(" zoek 1");
     return grad;
   }else if (int grad = draai(15, true, 180, 0) != -1){
+    Serial.print(grad);
+    Serial.println(" zoek 2");
     return grad;
   }else if (int grad = draai(15, false, 180, 90) != -1){
+    Serial.print(grad);
+    Serial.println(" zoek 3");
     return grad;
+  } else{
+    return -1;
   }
-  return -1;
 }
 
 void loop() {
   while (flame == HIGH){
-    if (graden = zoek() == -1){
+    int graden = zoek();
+    if (graden == -1){
+      Serial.println("draai 180");
       links(1);
       rechts(-1);
       delay(hele_draai*0.5);
       links(0);
       rechts(0);
-      if (graden = zoek() == -1){
+      int graden = zoek();
+      if (graden == -1){
+        Serial.println("draai 90 en rij");
         links(1);
         rechts(-1);
         delay(hele_draai*0.25);
@@ -128,29 +140,42 @@ void loop() {
         links(0);
         rechts(0);
       } else{
-        Serial.println("return");
+        Serial.println("return 1");
+        Serial.println(graden);
+        flame = HIGH;
         return graden;
       }
+    } else{
+        Serial.println("return 2");
+        Serial.println(graden);
+        flame = HIGH;
+        return graden;
+      }
+  }
+
+  Serial.println("ga door");
+
+  if (graden != -1){
+    if(graden < 90){
+      int draai = 90 - graden;
+      servo.write(90);
+      links(1);
+      rechts(-1);
+      delay(draai*25);
+      links(0);
+      rechts(0);
+    }else {
+      int draai = 180 - graden;
+      servo.write(90);
+      rechts(1);
+      links(-1);
+      delay(draai*25);
+      links(0);
+      rechts(0);
     }
   }
 
-  if(graden < 90){
-    int draai = 90 - graden;
-    links(1);
-    rechts(-1);
-    delay(draai*25);
-    links(0);
-    rechts(0);
-  }else {
-    int draai = 180 - graden;
-    rechts(1);
-    links(-1);
-    delay(draai*25);
-    links(0);
-    rechts(0);
-  }
-
-  while (bereken(afs_sensor_voor) > 20){
+  while (bereken(afs_sensor_voor) > 10){
     links(1);
     rechts(1);
   }
