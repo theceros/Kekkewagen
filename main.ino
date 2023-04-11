@@ -2,16 +2,18 @@
 # define trigPin 7
 
 Servo servo; 
-int flame = LOW;
+int flame = HIGH;
 long dur, dist;
 int links1 = 2;
 int links2 = 4;
 int rechts1 = 12;
 int rechts2 = 13;
-int hele_draai = 0;
+int hele_draai = 2250;
 int afs_sensor_links = 5;
 int afs_sensor_rechts = 6;
-int afa_sensor_voor = 10;
+int afs_sensor_voor = 10;
+int fan = 8; 
+int graden = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -21,12 +23,9 @@ void setup() {
   pinMode(trigPin, OUTPUT); 
   pinMode(links1, OUTPUT);
   pinMode(links2, OUTPUT);
-  pinMode(motorLeftPINPWM, OUTPUT);
   pinMode(rechts1, OUTPUT);
   pinMode(rechts2, OUTPUT);
-  pinMode(motorRightPINPWM, OUTPUT);
-
-
+  pinMode(fan, OUTPUT);
   delay(1000);   //starup timer
 }
 
@@ -47,17 +46,14 @@ void links(int speed) {
   if (speed > 0) {
     digitalWrite(links1, HIGH);
     digitalWrite(links2, LOW);
-    analogWrite(motorLeftPINPWM, speed);
   }
   else if(speed < 0){
     digitalWrite(links1, LOW);
     digitalWrite(links2, HIGH);
-    analogWrite(motorLeftPINPWM, -speed);
   }
   else {
     digitalWrite(links1, LOW);
     digitalWrite(links2, LOW);
-    analogWrite(motorLeftPINPWM, 0);
   }
 }
 void rechts(int speed) {
@@ -65,17 +61,14 @@ void rechts(int speed) {
   if (speed > 0) {
     digitalWrite(rechts1, HIGH);
     digitalWrite(rechts2, LOW);
-    analogWrite(motorRightPINPWM, speed);
   }
   else if(speed < 0){
     digitalWrite(rechts1, LOW);
     digitalWrite(rechts2, HIGH);
-    analogWrite(motorRightPINPWM, -speed);
   }
   else {
     digitalWrite(rechts1, LOW);
     digitalWrite(rechts2, LOW);
-    analogWrite(motorRightPINPWM, 0);
   }
 }
 
@@ -106,21 +99,82 @@ int draai(int snelheid, bool plus, int begin, int end){
 }
 
 
-void zoek(){
+int zoek(){
   if (int grad = draai(15, false, 90, 0) != -1){
-    Serial.println(grad);
-    delay(1000);
+    return grad;
   }else if (int grad = draai(15, true, 180, 0) != -1){
-    Serial.println(grad);
-    delay(1000);  
+    return grad;
   }else if (int grad = draai(15, false, 180, 90) != -1){
-    Serial.println(grad);
-    delay(1000);
+    return grad;
   }
+  return -1;
 }
 
 void loop() {
-  zoek();
+  if (flame == LOW && bereken(afs_sensor_voor) < 10){   
+    digitalWrite(fan, HIGH);
+    delay(3000);
+    digitalWrite(fan, LOW);
+    flame = HIGH;
+  }else{
+    if (graden = zoek() == -1){
+      links(-1);
+      rechts(1);
+      delay(hele_draai*0.5);
+      links(0);
+      rechts(0);
+      if (graden = zoek() != -1){
+        links(1);
+        rechts(-1);
+        delay(hele_draai*0.5);
+        links(0);
+        rechts(0);
+      }else{
+          if(graden < 90){
+            int draai = 90 - graden;
+            links(1);
+            rechts(-1);
+            delay(draai*25);
+          }else {
+            int draai = 180 - graden;
+            rechts(1);
+            links(-1);
+            delay(draai*25);
+      }
+      }
+    } else{
+      if(graden < 90){
+        int draai = 90 - graden;
+        links(1);
+        rechts(-1);
+        delay(draai*25);
+      }else {
+        int draai = 180 - graden;
+        rechts(1);
+        links(-1);
+        delay(draai*25);
+      }
+    }
+  }
 
-
+    while (bereken(afs_sensor_voor) > 20){
+      links(1);
+      rechts(1);
+      delay(500);
+      links(0);
+      rechts(0);
+  }
+    if(bereken(afs_sensor_links) < bereken(afs_sensor_rechts)){
+      links(-1);
+      rechts(1);
+      delay(hele_draai*0.25);
+      links(0);
+      rechts(0);
+    }else{
+      links(1);
+      rechts(-1);
+      delay(hele_draai*0.25);
+      links(0);
+      rechts(0);
+  }
 }
