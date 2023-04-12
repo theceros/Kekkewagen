@@ -14,6 +14,7 @@ int afs_sensor_rechts = 6;
 int afs_sensor_voor = 10;
 int fan = 8; 
 int graden;
+int teller1;
 
 void setup() {
   Serial.begin(9600);
@@ -74,17 +75,24 @@ void rechts(int speed) {
 
 
 int draai(int snelheid, bool plus, int begin, int end){
-    int teller = 0;
+    // int teller = 0;
     if (plus == true){
       for (int i = end; i < begin; ++i){  //van 0 tot 180 graden.
         delay(snelheid);                     //snelheid van servo, in miliseconde (1000 ms = 1 seconde)
         servo.write(i);             //hoeveel graden de servo staat.
         flame = digitalRead(3);
-        teller ++;
+        // teller ++;
         if (flame == LOW){
-          Serial.print(teller);
-          Serial.println(" draai 1");
-          return teller;
+          // Serial.print(teller);
+          Serial.println("draai 1: ");
+          Serial.println(i);
+          if(i < 90){
+            Serial.println((90 - i));
+            return (90 - i);
+          } else{
+            Serial.print(i);
+            return (90 - (180 - i));
+          }
         }
       } 
     } else if (plus == false){
@@ -92,11 +100,18 @@ int draai(int snelheid, bool plus, int begin, int end){
           delay(snelheid);                     //snelheid van servo, in miliseconde (1000 ms = 1 seconde)
           servo.write(i);
           flame = digitalRead(3);
-          teller --;
+          // teller --;
           if (flame == LOW){
-            Serial.print(teller);
-            Serial.println(" draai 2");
-            return teller;
+            Serial.print(begin - i);
+            Serial.println("draai 2: ");
+            Serial.println(i);
+            if(i < 90){
+              Serial.println((90 - (180 - i))* -1);
+              return ((90 - i)* -1);
+            } else{
+              Serial.print((i)* -1);
+              return ((90 - (180 - i))* -1);
+            }
           }
         }
   }
@@ -123,77 +138,70 @@ int zoek(){
 }
 
 void loop() {
-  while(flame == HIGH){
-    if (int graden = zoek(); graden == -1){   //voer zoek uit en check of flame is gezien.
+  Serial.print("begin");
+  while (flame == HIGH){
+    teller1 = 0;
+    Serial.println("HIGH");
+    if (graden = zoek(); graden == -1 && flame == HIGH){
+      Serial.println("draai 180");
       links(1);
       rechts(-1);
-      delay(hele_draai*0.5); //180 draaien
+      delay(hele_draai*0.55);
       links(0);
       rechts(0);
-      if (int graden = zoek(); graden == -1){  //voer zoek uit en check of flame is gezien.
+      if (graden = zoek(); graden == -1 && flame == HIGH){
+        Serial.println("draai 90 en rij");
         links(1);
         rechts(-1);
-        delay(hele_draai*0.25); //90 draaien
+        delay(hele_draai*0.30);
         links(1);
         rechts(1);
-        delay(500);
+        delay(1000);
         links(0);
         rechts(0);
-      }else{
-          if (graden < 0){       // is graden negatief doe:
-            graden = abs(graden);
-            servo.write(90);
-            links(-1);
-            rechts(1);
-            delay(graden*14);
-            links(0);
-            rechts(0);
-          }else {                // is graden positief doe:                 
-            graden = graden - 90;
-            servo.write(90);
-            rechts(-1);
-            links(1);
-            delay(graden*14);
-            links(0);
-            rechts(0);
-          }
       }
-    }else{
-      if (graden < 0){         // is graden negatief doe:
+    }
+    if (flame == LOW){
+      Serial.print("graden: ");
+      Serial.println(graden);
+      if(graden < 0){
         graden = abs(graden);
-        servo.write(90);
         links(-1);
         rechts(1);
-        delay(graden*14);
+        servo.write(90);
+        delay(graden*12.5);
         links(0);
         rechts(0);
-      }else {                // is graden positief doe:
-        graden = graden - 90;
-        servo.write(90);
+      }else {
         rechts(-1);
         links(1);
-        delay(graden*14);
+        servo.write(90);
+        delay(graden*13);
         links(0);
         rechts(0);
       }
     }
   }
-
-
-  while (bereken(afs_sensor_voor) > 15){
+  Serial.println("low");
+  while (bereken(11) > 20){
     links(1);
     rechts(1);
+    Serial.println("while"); 
   }
   links(0);
   rechts(0);
 
-  if (digitalRead(3) == LOW){
+  if (digitalRead(3) == LOW && bereken(11) < 21){
     Serial.println("blow");
     digitalWrite(fan, HIGH);
     delay(3000);
-    digitalWrite(fan, LOW);
+    digitalWrite(fan, LOW); 
+    flame = HIGH;
+  }  
+  if (teller1 > 3){
     flame = HIGH;
   }
-
+  teller1++;
 
 }
+
