@@ -187,19 +187,25 @@ void loop() {
   Serial.println("ga door");
 
 
-  while (bereken(afs_sensor_voor) > 15){
+  while (bereken(afs_sensor_voor) > 20){
     links(1);
     rechts(1);
   }
   links(0);
   rechts(0);
 
-  if (digitalRead(3) == LOW){
+  if (digitalRead(3) == LOW && bereken(afs_sensor_voor) < 20){
     Serial.println("blow");
     digitalWrite(fan, HIGH);
     delay(3000);
     digitalWrite(fan, LOW);
+    flame = HIGH;    
+  } else{
+    links(1);
+    rechts(1);
+    delay(100);
   }
-  flame = HIGH;
+  links(0);
+  rechts(0);
 
 }
